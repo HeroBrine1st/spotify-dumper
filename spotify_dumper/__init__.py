@@ -1,0 +1,1 @@
+from spotify_dumper.main import main

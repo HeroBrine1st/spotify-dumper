@@ -1,0 +1,7 @@
+venv
+.idea
+spotify_dumper.egg-info
+/build
+__pycache__
+/run
+/dist

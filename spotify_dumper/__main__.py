@@ -1,0 +1,4 @@
+import spotify_dumper
+
+if __name__ == '__main__':
+    spotify_dumper.main()
