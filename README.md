@@ -1,6 +1,6 @@
 # Spotify dumper
 
-Fancy utulity for dumping playlists and liked songs from your Spotify account into file or stdout.
+Fancy utility for dumping playlists and liked songs from your Spotify account into file or stdout.
 
 ## Installation
 
