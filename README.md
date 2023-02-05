@@ -1,6 +1,6 @@
 # Spotify dumper
 
-Automatically dump playlists and liked songs from your Spotify account.
+Fancy utulity for dumping playlists and liked songs from your Spotify account into file or stdout.
 
 ## Installation
 
@@ -40,3 +40,5 @@ Add http://localhost:30700/callback to Redirect URIs in settings of your applica
 Client ID and secret are required even with --keep because Spotify tokens are valid for only six hours or less, therefore requiring refreshing, which itself requires those tokens.
 ```
 P.s. run with ``--help`` for actual usage as above may be out of date.
+
+Example command: ``dump-spotify-data --client-id asdfasdfasdf3rge4re_replacethis --client-secret asdfasdfvawerf_replacethis -F txt output.txt``
