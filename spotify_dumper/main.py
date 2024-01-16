@@ -5,7 +5,7 @@ import sys
 
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional, TextIO
+from typing import Optional, TextIO, Any
 from rich.console import Console
 from rich.progress import Progress, BarColumn, SpinnerColumn, ProgressColumn, Task
 from rich.table import Column
@@ -79,7 +79,7 @@ def stylize_path(path: Path) -> Text:
     return parent.append(filename)
 
 
-def main():
+def main() -> None:
     args = parser.parse_args()
     output_file = args.output and args.output != "-" and Path(args.output)
 
@@ -175,7 +175,7 @@ def main():
     console.print(printout)
 
 
-def write_output(f: TextIO, output: list, args: argparse.Namespace):
+def write_output(f: TextIO, output: list[Any], args: argparse.Namespace) -> None:
     match args.format:
         case "json": json.dump(output, f)
         case "txt":

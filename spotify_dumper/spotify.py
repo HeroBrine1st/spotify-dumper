@@ -6,9 +6,11 @@ import socket
 import time
 import urllib.parse
 import webbrowser
-from typing import Optional
+from typing import Optional, Self, Iterator, Any
 
 from requests import Session
+
+Json = dict[str, Any]
 
 
 class SpotifyAPI:
@@ -29,25 +31,26 @@ class SpotifyAPI:
 
     @classmethod
     def new(cls, listen_port: int, client_id: Optional[str] = None, client_secret: Optional[str] = None,
-            keep: bool = False):
-        data = None
+            keep: bool = False) -> Self:
+
         if os.path.exists("data.json"):
             with open("data.json") as f:
                 data = json.load(f)
+        else:
+            data = {}
+
+        client_id = data.get("client_id", client_id)
+        client_secret = data.get("client_secret", client_secret)
 
         if client_id is None or client_secret is None:
-            if data is None:
-                raise NoApiPairError
-            elif "client_id" not in data or "client_secret" not in data:
-                raise NoApiPairError
-            client_id = data["client_id"]
-            client_secret = data["client_secret"]
+            raise NoApiPairError
+
         res = cls(listen_port=listen_port, client_id=client_id, client_secret=client_secret)
         if data:
             res.restore(data)
         else:
             res.auth()
-        if res.token_deadline < time.time():
+        if res.token_deadline and res.token_deadline < time.time():
             res.refresh()
         if keep or data:
             data = res.save()
@@ -57,19 +60,19 @@ class SpotifyAPI:
                 json.dump(data, f)
         return res
 
-    def restore(self, data: dict):
+    def restore(self, data: Json) -> None:
         self.access_token = data["access_token"]
         self.refresh_token = data["refresh_token"]
         self.token_deadline = data["token_deadline"]
 
-    def save(self):
+    def save(self) -> Json:
         return {
             "access_token": self.access_token,
             "refresh_token": self.refresh_token,
             "token_deadline": self.token_deadline
         }
 
-    def auth(self):
+    def auth(self) -> None:
         webbrowser.open(
             "https://accounts.spotify.com/authorize?"
             + urllib.parse.urlencode({
@@ -108,8 +111,10 @@ class SpotifyAPI:
                                   b"Content-Type: text/html\r\n"
                                   b"\r\n"
                                   b'<script>close()</script>You can close this window.')
-                    code = re.search('code=([^&]+)', path).group(1)
-                    break
+                    capture = re.search('code=([^&]+)', path)
+                    if capture:
+                        code = capture.group(1)
+                        break
         # endregion
         resp = self.session.post(
             "https://accounts.spotify.com/api/token",
@@ -129,7 +134,7 @@ class SpotifyAPI:
         self.refresh_token = data["refresh_token"]
         self.token_deadline = int(time.time()) + data["expires_in"]
 
-    def refresh(self):
+    def refresh(self) -> None:
         resp = self.session.post(
             "https://accounts.spotify.com/api/token",
             data=urllib.parse.urlencode({
@@ -146,7 +151,7 @@ class SpotifyAPI:
         self.access_token = data["access_token"]
         self.token_deadline = int(time.time()) + data["expires_in"]
 
-    def get(self, path, params=None):
+    def get(self, path: str, params: Optional[dict[str, Any]] = None) -> Json:
         if params is None:
             params = {}
         url = path if path.startswith("https://api.spotify.com/v1/") \
@@ -159,15 +164,16 @@ class SpotifyAPI:
         resp.raise_for_status()
         return resp.json()
 
-    def iterate(self, url, params=None):
+    def iterate(self, path: str, params: Optional[dict[str, Any]] = None) -> Iterator[Json]:
         if params is None:
             params = {}
-        response = self.get(url, params)
+        response = self.get(path, params)
         yield response
 
         while response["next"]:
             response = self.get(response['next'])
             yield response
+
 
 class NoApiPairError(Exception):
     pass
