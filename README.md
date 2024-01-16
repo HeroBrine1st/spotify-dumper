@@ -4,7 +4,8 @@ Fancy utility for dumping playlists and liked songs from your Spotify account in
 
 ## Installation
 
-1. Run ``pip install git+https://github.com/HeroBrine1st/spotify-dumper.git``
+1. Install Git
+2. Run ``pip install git+https://github.com/HeroBrine1st/spotify-dumper.git``
 
 ## Usage
 ```
@@ -42,3 +43,5 @@ Client ID and secret are required even with --keep because Spotify tokens are va
 P.s. run with ``--help`` for actual usage as above may be out of date.
 
 Example command: ``dump-spotify-data --client-id asdfasdfasdf3rge4re_replacethis --client-secret asdfasdfvawerf_replacethis -F txt output.txt``
+
+P.s.s. If you're on windows, you probably should use ``python -m spotify_dumper`` with arguments
