@@ -11,7 +11,7 @@ from rich.progress import Progress, BarColumn, SpinnerColumn, ProgressColumn, Ta
 from rich.table import Column
 from rich.text import Text
 from rich.theme import Theme
-from spotify_dumper.spotify import SpotifyAPI
+from spotify_dumper.spotify import SpotifyAPI, NoApiPairError
 
 THEME_DONE = "blue"
 
@@ -98,9 +98,12 @@ def main():
             exit(1)
 
     console = Console(theme=theme, file=sys.stderr)
-    spotify = SpotifyAPI(client_id=args.client_id, client_secret=args.client_secret, listen_port=args.listen_port)
     with console.status("Authorizing in spotify"):
-        spotify.initialize(keep=args.keep)
+        try:
+            spotify = SpotifyAPI.new(client_id=args.client_id, client_secret=args.client_secret, listen_port=args.listen_port, keep=args.keep)
+        except NoApiPairError:
+            console.print("No client id/secret provided! Use --client-id and --client-secret arguments.")
+            exit(1)
         user = spotify.get("me")
     console.print(f"⠿ Logged in as {user['display_name']}", style=THEME_DONE)
 
@@ -194,12 +197,10 @@ def write_output(f: TextIO, output: list, args: argparse.Namespace):
 parser = argparse.ArgumentParser(
     description="Dump spotify playlists to JSON file.\n",
     epilog="Get client ID and secret at https://developer.spotify.com/dashboard/applications.\n"
-           "Add http://localhost:30700/callback to Redirect URIs in settings of your application.\n"
-           "Client ID and secret are required even with --keep because Spotify tokens are valid for only six hours "
-           "or less, therefore requiring refreshing, which itself requires those tokens.",
+           "Add http://localhost:30700/callback to Redirect URIs in settings of your application.",
     formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument("-i", "--client-id", dest="client_id", help="Spotify client id", required=True)
-parser.add_argument("-s", "--client-secret", dest="client_secret", help="Spotify client secret", required=True)
+parser.add_argument("-i", "--client-id", dest="client_id", help="Spotify client id")
+parser.add_argument("-s", "--client-secret", dest="client_secret", help="Spotify client secret")
 parser.add_argument("-k", "--keep", "-keep-auth", dest="keep", action="store_true",
                     help="Save authorization token in current working directory "
                          "for future use. Default: authorization token forgotten immediately after exit.\n"

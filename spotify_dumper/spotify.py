@@ -27,31 +27,47 @@ class SpotifyAPI:
         self.client_id_header = "Basic " + base64.b64encode(f"{self.client_id}:{self.client_secret}".encode("utf-8")) \
             .decode("utf-8")
 
-    def initialize(self, keep: bool = True):
+    @classmethod
+    def new(cls, listen_port: int, client_id: Optional[str] = None, client_secret: Optional[str] = None,
+            keep: bool = False):
+        data = None
         if os.path.exists("data.json"):
-            self.load_from_file()
-        else:
-            self.auth()
-            if keep:
-                self.save_to_file()
-        if self.token_deadline < time.time():
-            self.refresh()
-            self.save_to_file()
+            with open("data.json") as f:
+                data = json.load(f)
 
-    def load_from_file(self):
-        with open("data.json") as f:
-            data = json.load(f)
+        if client_id is None or client_secret is None:
+            if data is None:
+                raise NoApiPairError
+            elif "client_id" not in data or "client_secret" not in data:
+                raise NoApiPairError
+            client_id = data["client_id"]
+            client_secret = data["client_secret"]
+        res = cls(listen_port=listen_port, client_id=client_id, client_secret=client_secret)
+        if data:
+            res.restore(data)
+        else:
+            res.auth()
+        if res.token_deadline < time.time():
+            res.refresh()
+        if keep or data:
+            data = res.save()
+            data["client_id"] = client_id
+            data["client_secret"] = client_secret
+            with open("data.json", "w") as f:
+                json.dump(data, f)
+        return res
+
+    def restore(self, data: dict):
         self.access_token = data["access_token"]
         self.refresh_token = data["refresh_token"]
         self.token_deadline = data["token_deadline"]
 
-    def save_to_file(self):
-        with open("data.json", "w") as f:
-            json.dump({
-                "access_token": self.access_token,
-                "refresh_token": self.refresh_token,
-                "token_deadline": self.token_deadline
-            }, f)
+    def save(self):
+        return {
+            "access_token": self.access_token,
+            "refresh_token": self.refresh_token,
+            "token_deadline": self.token_deadline
+        }
 
     def auth(self):
         webbrowser.open(
@@ -152,3 +168,6 @@ class SpotifyAPI:
         while response["next"]:
             response = self.get(response['next'])
             yield response
+
+class NoApiPairError(Exception):
+    pass
