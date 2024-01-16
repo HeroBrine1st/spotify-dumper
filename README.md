@@ -9,7 +9,7 @@ Fancy utility for dumping playlists and liked songs from your Spotify account in
 
 ## Usage
 ```
-usage: dump-spotify-data [-h] -i CLIENT_ID -s CLIENT_SECRET [-k] [-l] [--listen-port LISTEN_PORT] [--overwrite] [-f FILTER] [-F {json,txt}] [--no-playlists] [output_file]
+usage: dump-spotify-data [-h] [-i CLIENT_ID] [-s CLIENT_SECRET] [-k] [-l] [--listen-port LISTEN_PORT] [--overwrite] [-f FILTER] [-F {json,txt}] [--no-playlists] [output_file]
 
 Dump spotify playlists to JSON file.
 
@@ -37,8 +37,6 @@ options:
   --no-playlists        Do not include playlists to dump
 
 Get client ID and secret at https://developer.spotify.com/dashboard/applications.
-Add http://localhost:30700/callback to Redirect URIs in settings of your application.
-Client ID and secret are required even with --keep because Spotify tokens are valid for only six hours or less, therefore requiring refreshing, which itself requires those tokens.
 ```
 P.s. run with ``--help`` for actual usage as above may be out of date.
 
