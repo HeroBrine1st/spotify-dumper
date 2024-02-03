@@ -38,6 +38,9 @@ options:
 
 Get client ID and secret at https://developer.spotify.com/dashboard/applications.
 ```
+
+Don't forget to add `http://localhost:30700/callback` to Redirect URIs in settings of your application.
+
 P.s. run with ``--help`` for actual usage as above may be out of date.
 
 Example command: ``dump-spotify-data --client-id asdfasdfasdf3rge4re_replacethis --client-secret asdfasdfvawerf_replacethis -F txt output.txt``
