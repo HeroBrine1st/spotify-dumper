@@ -2,6 +2,8 @@
 
 Fancy utility for dumping playlists and liked songs from your Spotify account into file or stdout.
 
+https://github.com/HeroBrine1st/spotify-dumper/assets/22197536/4edca898-200b-4ae4-a7c0-23b1a905b152
+
 ## Installation
 
 1. Install Git
