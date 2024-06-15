@@ -7,7 +7,7 @@ Fancy utility for dumping playlists and liked songs from your Spotify account in
 1. Install Git
 2. Run ``pip install git+https://github.com/HeroBrine1st/spotify-dumper.git``
 
-Also, this tool can be run without installation if you're on nix:
+Also, this tool can be run without installation if you have nix package manager:
 
 ```
 nix run github:HeroBrine1st/spotify-dumper
