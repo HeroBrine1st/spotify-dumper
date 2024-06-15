@@ -10,7 +10,7 @@ Fancy utility for dumping playlists and liked songs from your Spotify account in
 Also, this tool can be run without installation if you have nix package manager:
 
 ```
-nix run github:HeroBrine1st/spotify-dumper
+nix run github:HeroBrine1st/spotify-dumper -- --help
 ```
 
 ## Usage
