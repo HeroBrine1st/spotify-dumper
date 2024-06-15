@@ -7,6 +7,12 @@ Fancy utility for dumping playlists and liked songs from your Spotify account in
 1. Install Git
 2. Run ``pip install git+https://github.com/HeroBrine1st/spotify-dumper.git``
 
+Also, this tool can be run without installation if you're on nix:
+
+```
+nix run github:HeroBrine1st/spotify_dumper
+```
+
 ## Usage
 ```
 usage: dump-spotify-data [-h] [-i CLIENT_ID] [-s CLIENT_SECRET] [-k] [-l] [--listen-port LISTEN_PORT] [--overwrite] [-f FILTER] [-F {json,txt}] [--no-playlists] [output_file]
@@ -37,6 +43,7 @@ options:
   --no-playlists        Do not include playlists to dump
 
 Get client ID and secret at https://developer.spotify.com/dashboard/applications.
+Add http://localhost:30700/callback to Redirect URIs in settings of your application.
 ```
 
 Don't forget to add `http://localhost:30700/callback` to Redirect URIs in settings of your application.
