@@ -65,7 +65,7 @@ P.s.s. If you're on windows, you probably should use ``python -m spotify_dumper`
 
 ### I don't get playlists owned by spotify!
 
-...And they fail to be included by --include
+<sup>...And they fail to be included by --include</sup>
 
 Starting with December
 2024, [Spotify removed algorithmic and Spotify-owned editorial playlists from responses](https://developer.spotify.com/blog/2024-11-27-changes-to-the-web-api).
