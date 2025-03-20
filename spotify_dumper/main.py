@@ -15,7 +15,6 @@ from spotify_dumper.spotify import SpotifyAPI, NoApiPairError
 
 THEME_DONE = "blue"
 
-
 # region I want it blue, I get it blue
 class TimeElapsedColumnLocal(ProgressColumn):
     """Renders time elapsed."""
@@ -28,13 +27,12 @@ class TimeElapsedColumnLocal(ProgressColumn):
         delta = timedelta(seconds=int(elapsed))
         return Text(str(delta), style=THEME_DONE if task.finished else "progress.elapsed")
 
-
 class TextColumnLocal(ProgressColumn):
     """A column containing text."""
 
     def __init__(
-            self,
-            text_format: str,
+        self,
+        text_format: str,
     ) -> None:
         self.text_format = text_format
         super().__init__(table_column=Column(no_wrap=True))
@@ -43,7 +41,6 @@ class TextColumnLocal(ProgressColumn):
         _text = self.text_format.format(task=task)
         text = Text.from_markup(_text, style=THEME_DONE if task.finished else "none")
         return text
-
 
 class MofNCompleteColumnLocal(ProgressColumn):
     def __init__(self, separator: str = "/", table_column: Optional[Column] = None):
@@ -61,11 +58,11 @@ class MofNCompleteColumnLocal(ProgressColumn):
             justify="right"
         )
 
-
-theme = Theme({
-    "bar.finished": THEME_DONE
-})
-
+theme = Theme(
+    {
+        "bar.finished": THEME_DONE
+    }
+)
 
 # endregion
 
@@ -77,7 +74,6 @@ def stylize_path(path: Path) -> Text:
     filename.stylize("repr.filename")
     if str(path.parent) == ".": return filename
     return parent.append(filename)
-
 
 def main() -> None:
     args = parser.parse_args()
@@ -100,7 +96,9 @@ def main() -> None:
     console = Console(theme=theme, file=sys.stderr)
     with console.status("Authorizing in spotify"):
         try:
-            spotify = SpotifyAPI.new(client_id=args.client_id, client_secret=args.client_secret, listen_port=args.listen_port, keep=args.keep)
+            spotify = SpotifyAPI.new(
+                client_id=args.client_id, client_secret=args.client_secret, listen_port=args.listen_port, keep=args.keep
+            )
         except NoApiPairError:
             console.print("No client id/secret provided! Use --client-id and --client-secret arguments.")
             exit(1)
@@ -118,18 +116,21 @@ def main() -> None:
         console.print(f'⠿ Fetched playlist data ({len(playlists)} playlists)', style=THEME_DONE)
 
     with Progress(
-            SpinnerColumn(finished_text=Text("⠿", style=THEME_DONE)),
-            TextColumnLocal("[progress.description]{task.description}"),
-            MofNCompleteColumnLocal(),
-            BarColumn(bar_width=None),
-            TimeElapsedColumnLocal(),
-            console=console,
-            expand=True) as progress:
+        SpinnerColumn(finished_text=Text("⠿", style=THEME_DONE)),
+        TextColumnLocal("[progress.description]{task.description}"),
+        MofNCompleteColumnLocal(),
+        BarColumn(bar_width=None),
+        TimeElapsedColumnLocal(),
+        console=console,
+        expand=True
+    ) as progress:
 
         # Place individual playlists first
         liked_songs_task = progress.add_task("Liked songs", total=None, visible=False, start=False)
-        playlist_tasks = [progress.add_task(f"{playlist['name']}",
-                                            total=playlist["tracks"]["total"], visible=False, start=False) for playlist
+        playlist_tasks = [progress.add_task(
+            f"{playlist['name']}",
+            total=playlist["tracks"]["total"], visible=False, start=False
+        ) for playlist
                           in playlists]
         task_playlists_total = progress.add_task("Playlists", total=len(playlists) + args.include_liked)
         task_tracks_total = progress.add_task(
@@ -144,9 +145,11 @@ def main() -> None:
             for response in spotify.iterate("/me/tracks", {"limit": 50}):
                 liked_songs += response["items"]
                 progress.update(task_id=liked_songs_task, total=response["total"], completed=len(liked_songs))
-                progress.update(task_id=task_tracks_total,
-                                total=response["total"] + sum(map(lambda x: x["tracks"]["total"], playlists)),
-                                completed=len(liked_songs))
+                progress.update(
+                    task_id=task_tracks_total,
+                    total=response["total"] + sum(map(lambda x: x["tracks"]["total"], playlists)),
+                    completed=len(liked_songs)
+                )
             progress.advance(task_playlists_total, 1)
 
         for playlist, fetch_playlist_task in zip(playlists, playlist_tasks, strict=True):
@@ -174,10 +177,10 @@ def main() -> None:
     # There's a race condition (I encountered once)
     console.print(printout)
 
-
 def write_output(f: TextIO, output: list[Any], args: argparse.Namespace) -> None:
     match args.format:
-        case "json": json.dump(output, f)
+        case "json":
+            json.dump(output, f)
         case "txt":
             # https://github.com/caseychu/spotify-backup/blob/d0bb610af74c5845e87d23eaf758c91a51e7b20e/spotify-backup.py#L188-L199
             for playlist in output:
@@ -185,38 +188,52 @@ def write_output(f: TextIO, output: list[Any], args: argparse.Namespace) -> None
                 for track in playlist["tracks"]:
                     if track["track"] is None:
                         continue
-                    f.write("{name}\t{artists}\t{album}\t{uri}\r\n".format(
-                        uri=track["track"]["uri"],
-                        name=track["track"]["name"],
-                        artists=", ".join([artist["name"] for artist in track["track"]["artists"]]),
-                        album=track["track"]["album"]["name"]
-                    ))
+                    f.write(
+                        "{name}\t{artists}\t{album}\t{uri}\r\n".format(
+                            uri=track["track"]["uri"],
+                            name=track["track"]["name"],
+                            artists=", ".join([artist["name"] for artist in track["track"]["artists"]]),
+                            album=track["track"]["album"]["name"]
+                        )
+                    )
                 f.write('\r\n')
-
 
 parser = argparse.ArgumentParser(
     description="Dump spotify playlists to JSON file.\n",
     epilog="Get client ID and secret at https://developer.spotify.com/dashboard/applications.\n"
            "Add http://localhost:30700/callback to Redirect URIs in settings of your application.",
-    formatter_class=argparse.RawTextHelpFormatter)
+    formatter_class=argparse.RawTextHelpFormatter
+)
 parser.add_argument("-i", "--client-id", dest="client_id", help="Spotify client id")
 parser.add_argument("-s", "--client-secret", dest="client_secret", help="Spotify client secret")
-parser.add_argument("-k", "--keep", "-keep-auth", dest="keep", action="store_true",
-                    help="Save authorization token in current working directory "
-                         "for future use. Default: authorization token forgotten immediately after exit.\n"
-                         "Required only for first time and intended for long-term usage without attached console, "
-                         "e.g. backing up your playlist data regularly.")
-parser.add_argument("-l", "--liked", "--liked-songs", "--liked-tracks", dest="include_liked", action="store_true",
-                    help="Also add liked songs to dump if this flag is present.")
-parser.add_argument("--listen-port", dest="listen_port", type=int, default=30700,
-                    help="For advanced users. Change port of internal HTTP server that is responsible for taking auth code.")
+parser.add_argument(
+    "-k", "--keep", "-keep-auth", dest="keep", action="store_true",
+    help="Save authorization token in current working directory "
+         "for future use. Default: authorization token forgotten immediately after exit.\n"
+         "Required only for first time and intended for long-term usage without attached console, "
+         "e.g. backing up your playlist data regularly."
+)
+parser.add_argument(
+    "-l", "--liked", "--liked-songs", "--liked-tracks", dest="include_liked", action="store_true",
+    help="Also add liked songs to dump if this flag is present."
+)
+parser.add_argument(
+    "--listen-port", dest="listen_port", type=int, default=30700,
+    help="For advanced users. Change port of internal HTTP server that is responsible for taking auth code."
+)
 parser.add_argument("--overwrite", dest="overwrite", action="store_true", help="Overwrite destination file.")
-parser.add_argument("-f", "--filter", dest="filter",
-                    help="Filter playlists exactly matching (part of) name, but ignoring case.")
-parser.add_argument("-F", "--format", dest="format", help="Output format (default: txt)", default="txt", choices=["json", "txt"])
+parser.add_argument(
+    "-f", "--filter", dest="filter",
+    help="Filter playlists exactly matching (part of) name, but ignoring case."
+)
+parser.add_argument(
+    "-F", "--format", dest="format", help="Output format (default: txt)", default="txt", choices=["json", "txt"]
+)
 parser.add_argument("--no-playlists", dest="no_playlists", action="store_true", help="Do not include playlists to dump")
-parser.add_argument("output", metavar="output_file",
-                    help="Write dump to a file", nargs="?")
+parser.add_argument(
+    "output", metavar="output_file",
+    help="Write dump to a file", nargs="?"
+)
 
 if __name__ == "__main__":
     main()

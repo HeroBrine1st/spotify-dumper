@@ -12,7 +12,6 @@ from requests import Session
 
 Json = dict[str, Any]
 
-
 class SpotifyAPI:
     token_deadline: Optional[float]
     access_token: Optional[str]
@@ -30,8 +29,10 @@ class SpotifyAPI:
             .decode("utf-8")
 
     @classmethod
-    def new(cls, listen_port: int, client_id: Optional[str] = None, client_secret: Optional[str] = None,
-            keep: bool = False) -> Self:
+    def new(
+        cls, listen_port: int, client_id: Optional[str] = None, client_secret: Optional[str] = None,
+        keep: bool = False
+    ) -> Self:
 
         if os.path.exists("data.json"):
             with open("data.json") as f:
@@ -75,12 +76,14 @@ class SpotifyAPI:
     def auth(self) -> None:
         webbrowser.open(
             "https://accounts.spotify.com/authorize?"
-            + urllib.parse.urlencode({
-                "response_type": "code",
-                "client_id": self.client_id,
-                "scope": "playlist-read-private playlist-read-collaborative user-library-read",
-                "redirect_uri": f"http://localhost:{self.listen_port}/callback",
-            })
+            + urllib.parse.urlencode(
+                {
+                    "response_type": "code",
+                    "client_id": self.client_id,
+                    "scope": "playlist-read-private playlist-read-collaborative user-library-read",
+                    "redirect_uri": f"http://localhost:{self.listen_port}/callback",
+                }
+            )
         )
         # region Handle incoming request in-place
         # With any library I would have to use threading.Event or something, because
@@ -107,10 +110,12 @@ class SpotifyAPI:
                         continue
                     # We do not support HTTP/2
                     assert version in ["HTTP/1.1", "HTTP/1.0"]
-                    sock2.sendall(b"HTTP/1.0 200 OK\r\n"
-                                  b"Content-Type: text/html\r\n"
-                                  b"\r\n"
-                                  b'<script>close()</script>You can close this window.')
+                    sock2.sendall(
+                        b"HTTP/1.0 200 OK\r\n"
+                        b"Content-Type: text/html\r\n"
+                        b"\r\n"
+                        b'<script>close()</script>You can close this window.'
+                    )
                     capture = re.search('code=([^&]+)', path)
                     if capture:
                         code = capture.group(1)
@@ -118,11 +123,13 @@ class SpotifyAPI:
         # endregion
         resp = self.session.post(
             "https://accounts.spotify.com/api/token",
-            data=urllib.parse.urlencode({
-                "grant_type": "authorization_code",
-                "code": code,
-                "redirect_uri": f"http://localhost:{self.listen_port}/callback",
-            }),
+            data=urllib.parse.urlencode(
+                {
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "redirect_uri": f"http://localhost:{self.listen_port}/callback",
+                }
+            ),
             headers={
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Authorization": self.client_id_header
@@ -137,10 +144,12 @@ class SpotifyAPI:
     def refresh(self) -> None:
         resp = self.session.post(
             "https://accounts.spotify.com/api/token",
-            data=urllib.parse.urlencode({
-                "grant_type": "refresh_token",
-                "refresh_token": self.refresh_token
-            }),
+            data=urllib.parse.urlencode(
+                {
+                    "grant_type": "refresh_token",
+                    "refresh_token": self.refresh_token
+                }
+            ),
             headers={
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Authorization": self.client_id_header
@@ -173,7 +182,6 @@ class SpotifyAPI:
         while response["next"]:
             response = self.get(response['next'])
             yield response
-
 
 class NoApiPairError(Exception):
     pass
