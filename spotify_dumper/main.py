@@ -6,6 +6,8 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 from typing import Optional, TextIO, Any
+
+from requests import HTTPError
 from rich.console import Console
 from rich.progress import Progress, BarColumn, SpinnerColumn, ProgressColumn, Task
 from rich.table import Column
@@ -105,15 +107,41 @@ def main() -> None:
         user = spotify.get("me")
     console.print(f"⠿ Logged in as {user['display_name']}", style=THEME_DONE)
 
+    # include_user_playlists: True | None
+    # include_liked: True | None
+    # playlist_uris: list[str] | None
+    # excluded_playlist_uris: list[str] | None
+
     playlists = list()
-    if not args.no_playlists:
-        with console.status("Fetching playlist data") as status:
+    with console.status("Fetching playlist data") as status:
+        if args.include_user_playlists:
             for response in spotify.iterate("/me/playlists?limit=50"):
                 playlists += response["items"]
                 status.update(f'Fetching playlist data ({len(playlists)}/{response["total"]})')
-            if args.filter:
-                playlists = [playlist for playlist in playlists if args.filter.lower() in playlist["name"].lower()]
-        console.print(f'⠿ Fetched playlist data ({len(playlists)} playlists)', style=THEME_DONE)
+        if args.playlist_uris:
+            for uri in args.playlist_uris:
+                uri: str
+                if args.excluded_playlist_uris and uri in args.excluded_playlist_uris:
+                    continue
+                try:
+
+                    playlist = spotify.get(f"/playlists/{uri.removeprefix("spotify:playlist:")}")
+                except HTTPError as e:
+                    if e.response.status_code == 404:
+                        console.print(f"Playlist {uri} does not exist!", style="red")
+                        exit(1)
+                    raise
+                playlists.append(playlist)
+        if args.excluded_playlist_uris:
+            playlists = [
+                playlist for playlist in playlists if playlist["uri"] not in args.excluded_playlist_uris
+            ]
+        if len(playlists) > 0:
+            console.print(f'⠿ Fetched playlist data ({len(playlists)} playlists)', style=THEME_DONE)
+
+    if not playlists:
+        console.print("No playlists to fetch!", style="red")
+        exit(1)
 
     with Progress(
         SpinnerColumn(finished_text=Text("⠿", style=THEME_DONE)),
@@ -131,7 +159,7 @@ def main() -> None:
             f"{playlist['name']}",
             total=playlist["tracks"]["total"], visible=False, start=False
         ) for playlist
-                          in playlists]
+            in playlists]
         task_playlists_total = progress.add_task("Playlists", total=len(playlists) + args.include_liked)
         task_tracks_total = progress.add_task(
             "Tracks",
@@ -204,36 +232,51 @@ parser = argparse.ArgumentParser(
            "Add http://localhost:30700/callback to Redirect URIs in settings of your application.",
     formatter_class=argparse.RawTextHelpFormatter
 )
-parser.add_argument("-i", "--client-id", dest="client_id", help="Spotify client id")
-parser.add_argument("-s", "--client-secret", dest="client_secret", help="Spotify client secret")
+
+# Authorisation
+parser.add_argument("--client-id", dest="client_id", help="Spotify client id")
+parser.add_argument("--client-secret", dest="client_secret", help="Spotify client secret")
 parser.add_argument(
-    "-k", "--keep", "-keep-auth", dest="keep", action="store_true",
+    "-k", "--keep", "--keep-auth", dest="keep", action="store_true",
     help="Save authorization token in current working directory "
          "for future use. Default: authorization token forgotten immediately after exit.\n"
          "Required only for first time and intended for long-term usage without attached console, "
          "e.g. backing up your playlist data regularly."
 )
 parser.add_argument(
-    "-l", "--liked", "--liked-songs", "--liked-tracks", dest="include_liked", action="store_true",
-    help="Also add liked songs to dump if this flag is present."
-)
-parser.add_argument(
     "--listen-port", dest="listen_port", type=int, default=30700,
     help="For advanced users. Change port of internal HTTP server that is responsible for taking auth code."
 )
+
+# Output
 parser.add_argument("--overwrite", dest="overwrite", action="store_true", help="Overwrite destination file.")
-parser.add_argument(
-    "-f", "--filter", dest="filter",
-    help="Filter playlists exactly matching (part of) name, but ignoring case."
-)
 parser.add_argument(
     "-F", "--format", dest="format", help="Output format (default: txt)", default="txt", choices=["json", "txt"]
 )
-parser.add_argument("--no-playlists", dest="no_playlists", action="store_true", help="Do not include playlists to dump")
 parser.add_argument(
     "output", metavar="output_file",
     help="Write dump to a file", nargs="?"
 )
+
+# Playlist selection
+parser.add_argument(
+    "-u", "--include-user-playlists", dest="include_user_playlists", action='store_true',
+    help="Include user's playlists (owned and followed)"
+)
+parser.add_argument(
+    "-l", "--include-liked-tracks", dest="include_liked", action="store_true",
+    help="Include liked tracks as a playlist"
+)
+parser.add_argument(
+    "-i", "--include", dest="playlist_uris", action="append", metavar="URI",
+    help="Include additional playlists by their URI in the format spotify:playlist:<base64-encoded id>. Can be repeated for multiple playlists"
+)
+parser.add_argument(
+    "-x", "--exclude", dest="excluded_playlist_uris", action="append", metavar="URI",
+    help="Exclude playlists by their URI in the format spotify:playlist:<base64-encoded id>. Can be repeated for multiple playlists. This option is evaluated last and overrides all other inclusion rules"
+)
+
+
 
 if __name__ == "__main__":
     main()
