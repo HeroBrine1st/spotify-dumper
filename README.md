@@ -4,6 +4,8 @@ Fancy utility for dumping playlists and liked songs from your Spotify account in
 
 https://github.com/HeroBrine1st/spotify-dumper/assets/22197536/4edca898-200b-4ae4-a7c0-23b1a905b152
 
+(old video, currently this command is `dump-spotify-data --include-user-playlists --include-liked-tracks`, and assuming it has been called with `--keep` previously in the same directory)
+
 ## Installation
 
 1. Install Git
