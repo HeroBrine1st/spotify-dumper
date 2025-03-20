@@ -46,9 +46,9 @@ options:
   -l, --include-liked-tracks
                         Include liked tracks as a playlist
   -i URI, --include URI
-                        Include additional playlists by their URI in the format spotify:playlist:<base64-encoded id>. Can be repeated for multiple playlists
+                        Include additional playlists by their URI in the format spotify:playlist:<base62-encoded id>. Can be repeated for multiple playlists
   -x URI, --exclude URI
-                        Exclude playlists by their URI in the format spotify:playlist:<base64-encoded id>. Can be repeated for multiple playlists. This option is evaluated last and overrides all other inclusion rules
+                        Exclude playlists by their URI in the format spotify:playlist:<base62-encoded id>. Can be repeated for multiple playlists. This option is evaluated last and overrides all other inclusion rules
 
 Get client ID and secret at https://developer.spotify.com/dashboard/applications.
 Add http://localhost:30700/callback to Redirect URIs in settings of your application.

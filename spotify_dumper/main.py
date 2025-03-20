@@ -269,11 +269,11 @@ parser.add_argument(
 )
 parser.add_argument(
     "-i", "--include", dest="playlist_uris", action="append", metavar="URI",
-    help="Include additional playlists by their URI in the format spotify:playlist:<base64-encoded id>. Can be repeated for multiple playlists"
+    help="Include additional playlists by their URI in the format spotify:playlist:<base62-encoded id>. Can be repeated for multiple playlists"
 )
 parser.add_argument(
     "-x", "--exclude", dest="excluded_playlist_uris", action="append", metavar="URI",
-    help="Exclude playlists by their URI in the format spotify:playlist:<base64-encoded id>. Can be repeated for multiple playlists. This option is evaluated last and overrides all other inclusion rules"
+    help="Exclude playlists by their URI in the format spotify:playlist:<base62-encoded id>. Can be repeated for multiple playlists. This option is evaluated last and overrides all other inclusion rules"
 )
 
 
