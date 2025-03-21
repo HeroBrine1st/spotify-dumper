@@ -59,7 +59,7 @@ Don't forget to add `http://localhost:30700/callback` to Redirect URIs in settin
 P.s. run with ``--help`` for actual usage as above may be out of date.
 
 Example command:
-``dump-spotify-data --client-id asdfasdfasdf3rge4re_replacethis --client-secret asdfasdfvawerf_replacethis -F txt output.txt``
+``dump-spotify-data --client-id asdfasdfasdf3rge4re_replacethis --client-secret asdfasdfvawerf_replacethis -F txt --include-user-playlists output.txt``
 
 P.s.s. If you're on windows, you probably should use ``python -m spotify_dumper`` with arguments
 
