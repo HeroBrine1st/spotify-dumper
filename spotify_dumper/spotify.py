@@ -12,7 +12,6 @@ from requests import Session
 
 Json = dict[str, Any]
 
-
 class SpotifyAPI:
     token_deadline: Optional[float]
     access_token: Optional[str]
@@ -26,14 +25,15 @@ class SpotifyAPI:
         self.client_id = client_id
         self.client_secret = client_secret
         self.listen_port = listen_port
-        self.client_id_header = "Basic " + base64.b64encode(
-            f"{self.client_id}:{self.client_secret}".encode("utf-8")
-        ).decode("utf-8")
+        self.client_id_header = "Basic " + base64.b64encode(f"{self.client_id}:{self.client_secret}".encode("utf-8")) \
+            .decode("utf-8")
 
     @classmethod
     def new(
-        cls, listen_port: int, client_id: Optional[str] = None, client_secret: Optional[str] = None, keep: bool = False
+        cls, listen_port: int, client_id: Optional[str] = None, client_secret: Optional[str] = None,
+        keep: bool = False
     ) -> Self:
+
         if os.path.exists("data.json"):
             with open("data.json") as f:
                 data = json.load(f)
@@ -70,7 +70,7 @@ class SpotifyAPI:
         return {
             "access_token": self.access_token,
             "refresh_token": self.refresh_token,
-            "token_deadline": self.token_deadline,
+            "token_deadline": self.token_deadline
         }
 
     def auth(self) -> None:
@@ -90,7 +90,7 @@ class SpotifyAPI:
         # no library lets you handle request in-place.
         with socket.socket() as sock:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.bind(("127.0.0.1", self.listen_port))
+            sock.bind(('127.0.0.1', self.listen_port))
             sock.listen()
             while True:
                 sock2, _ = sock.accept()
@@ -114,9 +114,9 @@ class SpotifyAPI:
                         b"HTTP/1.0 200 OK\r\n"
                         b"Content-Type: text/html\r\n"
                         b"\r\n"
-                        b"<script>close()</script>You can close this window."
+                        b'<script>close()</script>You can close this window.'
                     )
-                    capture = re.search("code=([^&]+)", path)
+                    capture = re.search('code=([^&]+)', path)
                     if capture:
                         code = capture.group(1)
                         break
@@ -130,7 +130,10 @@ class SpotifyAPI:
                     "redirect_uri": f"http://127.0.0.1:{self.listen_port}/callback",
                 }
             ),
-            headers={"Content-Type": "application/x-www-form-urlencoded", "Authorization": self.client_id_header},
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": self.client_id_header
+            }
         )
         resp.raise_for_status()
         data = resp.json()
@@ -141,8 +144,16 @@ class SpotifyAPI:
     def refresh(self) -> None:
         resp = self.session.post(
             "https://accounts.spotify.com/api/token",
-            data=urllib.parse.urlencode({"grant_type": "refresh_token", "refresh_token": self.refresh_token}),
-            headers={"Content-Type": "application/x-www-form-urlencoded", "Authorization": self.client_id_header},
+            data=urllib.parse.urlencode(
+                {
+                    "grant_type": "refresh_token",
+                    "refresh_token": self.refresh_token
+                }
+            ),
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": self.client_id_header
+            }
         )
         resp.raise_for_status()
         data = resp.json()
@@ -152,12 +163,13 @@ class SpotifyAPI:
     def get(self, path: str, params: Optional[dict[str, Any]] = None) -> Json:
         if params is None:
             params = {}
-        url = (
-            path
-            if path.startswith("https://api.spotify.com/v1/")
+        url = path if path.startswith("https://api.spotify.com/v1/") \
             else "https://api.spotify.com/v1/" + path.removeprefix("/")
+        resp = self.session.get(
+            url,
+            headers={"Authorization": f"Bearer {self.access_token}"},
+            params=params
         )
-        resp = self.session.get(url, headers={"Authorization": f"Bearer {self.access_token}"}, params=params)
         resp.raise_for_status()
         return resp.json()
 
@@ -168,9 +180,8 @@ class SpotifyAPI:
         yield response
 
         while response["next"]:
-            response = self.get(response["next"])
+            response = self.get(response['next'])
             yield response
-
 
 class NoApiPairError(Exception):
     pass
