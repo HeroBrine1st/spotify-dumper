@@ -51,10 +51,10 @@ options:
                         Exclude playlists by their URI in the format spotify:playlist:<base62-encoded id>. Can be repeated for multiple playlists. This option is evaluated last and overrides all other inclusion rules
 
 Get client ID and secret at https://developer.spotify.com/dashboard/applications.
-Add http://localhost:30700/callback to Redirect URIs in settings of your application.
+Add http://127.0.0.1:30700/callback to Redirect URIs in settings of your application.
 ```
 
-Don't forget to add `http://localhost:30700/callback` to Redirect URIs in settings of your application.
+Don't forget to add `http://127.0.0.1:30700/callback` to Redirect URIs in settings of your application.
 
 P.s. run with ``--help`` for actual usage as above may be out of date.
 
