@@ -229,7 +229,7 @@ def write_output(f: TextIO, output: list[Any], args: argparse.Namespace) -> None
 parser = argparse.ArgumentParser(
     description="Dump spotify playlists to JSON file.\n",
     epilog="Get client ID and secret at https://developer.spotify.com/dashboard/applications.\n"
-           "Add http://localhost:30700/callback to Redirect URIs in settings of your application.",
+           "Add http://127.0.0.1:30700/callback to Redirect URIs in settings of your application.",
     formatter_class=argparse.RawTextHelpFormatter
 )
 

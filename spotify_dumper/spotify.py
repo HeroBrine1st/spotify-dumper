@@ -81,7 +81,7 @@ class SpotifyAPI:
                     "response_type": "code",
                     "client_id": self.client_id,
                     "scope": "playlist-read-private playlist-read-collaborative user-library-read",
-                    "redirect_uri": f"http://localhost:{self.listen_port}/callback",
+                    "redirect_uri": f"http://127.0.0.1:{self.listen_port}/callback",
                 }
             )
         )
@@ -127,7 +127,7 @@ class SpotifyAPI:
                 {
                     "grant_type": "authorization_code",
                     "code": code,
-                    "redirect_uri": f"http://localhost:{self.listen_port}/callback",
+                    "redirect_uri": f"http://127.0.0.1:{self.listen_port}/callback",
                 }
             ),
             headers={
